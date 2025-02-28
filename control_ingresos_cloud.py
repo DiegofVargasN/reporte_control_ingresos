@@ -138,17 +138,77 @@ Responde de forma clara y en lenguaje natural, sin mostrar el código, indicando
     natural_response = llm.predict(prompt_natural).strip()
     return natural_response
 
-#st.title("📊 Chatbot de Análisis de Datos con Pandas - INICIO")
-st.sidebar.title("Menú de Navegación")
-option = st.sidebar.selectbox("Selecciona una opción:", ["INICIO","CHAT IA", "POSTPAGO", "PREPAGO"])
+def summarize_dataframe(df):
+    """Genera un resumen sencillo del DataFrame para dar contexto."""
+    if df.empty:
+        return "⚠️ No hay datos disponibles."
+    sample_data = df.head(5).to_dict(orient="records")
+    aggregates = {
+        "Total de registros": len(df),
+        "Columnas": list(df.columns)
+    }
+    summary = f"Métricas clave:\n{aggregates}\n\nEjemplo de datos:\n{sample_data}"
+    return summary
 
-# 🔹 Mostrar contenido según la opción seleccionada
+def get_analysis_opinion(df):
+    """Genera una opinión y análisis global del DataFrame a partir de un resumen."""
+    summary = summarize_dataframe(df)
+    prompt_analysis = f"""
+Eres un analista de datos experto. A partir del siguiente resumen del DataFrame:
+{summary}
+Da tu opinión y análisis sobre las tendencias, patrones y aspectos destacados del archivo, en un lenguaje claro y conciso.
+    """
+    opinion = llm.predict(prompt_analysis).strip()
+    return opinion
+
+def get_analysis_by_column(df):
+    """Genera un resumen y análisis para cada columna del DataFrame."""
+    analysis_result = {}
+    for col in df.columns:
+        prompt = f"""
+Eres un experto en análisis de datos. Analiza la columna '{col}' del DataFrame.
+Proporciona un resumen claro y conciso de su contenido, tendencias y cualquier información relevante.
+Si la columna es numérica, incluye estadísticas básicas; si es categórica, menciona los valores más frecuentes.
+        """
+        analysis_result[col] = llm.predict(prompt).strip()
+    return analysis_result
+
+def is_relevant_query(query, df):
+    """Verifica si la consulta está relacionada con las columnas del DataFrame o contiene palabras clave de análisis."""
+    query_lower = query.lower()
+    columns_lower = [col.lower() for col in df.columns]
+    if any(col in query_lower for col in columns_lower):
+        return True
+    keywords = ["suma", "promedio", "total", "cuántos", "filtrar", "estadísticas", "análisis", "dato", "mínimo", "máximo"]
+    if any(keyword in query_lower for keyword in keywords):
+        return True
+    return False
+
+def is_analysis_by_column(query):
+    """Determina si se solicita un análisis por cada columna."""
+    keywords = ["por cada columna", "analiza cada columna", "resumen por columna", "análisis por columna"]
+    return any(keyword in query.lower() for keyword in keywords)
+
+def is_greeting(query):
+    """Determina si la consulta es un saludo."""
+    greetings = ["hola", "buenos días", "buenas tardes", "saludos"]
+    return any(greet in query.lower() for greet in greetings)
+
+def is_farewell(query):
+    """Determina si la consulta es una despedida."""
+    farewells = ["adiós", "hasta luego", "nos vemos", "chau", "chao"]
+    return any(farewell in query.lower() for farewell in farewells)
+
+# st.title("📊 Chatbot de Análisis de Datos con Pandas - INICIO")
+st.sidebar.title("Menú de Navegación")
+option = st.sidebar.selectbox("Selecciona una opción:", ["INICIO", "CHAT IA", "POSTPAGO", "PREPAGO"])
+
 if option == "INICIO":
     st.title("📊 Bienvenido al Panel de Control")
     st.write("Selecciona una opción en el menú lateral para ver los datos.")
 
 if option == "CHAT IA":
-    st.title("🤖 DataIA - Analisis de Datos(Test)")
+    st.title("🤖 DataIA - Análisis de Datos (Test)")
     selected_sheet = st.selectbox("📂 Selecciona el tipo de datos", ["Postpago", "Prepago"])
     sheet_index = 0 if selected_sheet == "Postpago" else 1
 
@@ -161,7 +221,6 @@ if option == "CHAT IA":
         st.subheader("Columnas Disponibles:")
         st.write(column_names)
     
-    #st.markdown("## Chatbot")
     chat_container = st.empty()
     with chat_container.container():
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
@@ -172,7 +231,7 @@ if option == "CHAT IA":
                 st.markdown(f'<div class="bot-message"><strong>Bot:</strong> {message["message"]}</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns([5, 1, 1])  # Definimos tres columnas
+    col1, col2, col3 = st.columns([5, 1, 1])
 
     with col1:
         with st.form(key="chat_form", clear_on_submit=True):
@@ -182,7 +241,7 @@ if option == "CHAT IA":
     with col2:
         if st.button("Limpiar Chat"):
             st.session_state.chat_history = []
-            chat_container.empty()  # Limpiar el chat al hacer clic
+            chat_container.empty()
 
     with col3:
         if st.button("Descargar Chat"):
@@ -198,15 +257,41 @@ if option == "CHAT IA":
         st.session_state.chat_history.append({"sender": "user", "message": user_input})
         
         with st.spinner("⏳ Procesando tu consulta..."):
-            result = get_calculation_result(user_input, df)
-            if result is None:
-                answer = ("Soy un bot en entrenamiento, pero tomaré en cuenta tu consulta "
-                          "para poder mejorar mi eficiencia.")
+            # Si es una despedida, responde y finaliza
+            if is_farewell(user_input):
+                answer = "¡Adiós! Gracias por usar DataIA. ¡Hasta pronto! 👋"
+            # Si es un saludo pero no tiene otros elementos relevantes, responde con saludo
+            elif is_greeting(user_input) and not is_relevant_query(user_input, df):
+                answer = "¡Hola! ¿En qué puedo ayudarte con el análisis de datos?"
+            # Si se solicita un análisis global del archivo
+            elif "analiza el archivo" in user_input.lower() or "análisis del archivo" in user_input.lower():
+                answer = get_analysis_opinion(df)
+                if is_greeting(user_input):
+                    answer = "¡Hola! " + answer
+            # Si se solicita un análisis por cada columna
+            elif is_analysis_by_column(user_input):
+                analysis = get_analysis_by_column(df)
+                analysis_str = ""
+                for col, text in analysis.items():
+                    analysis_str += f"**{col}:**\n{text}\n\n"
+                answer = analysis_str
+                if is_greeting(user_input):
+                    answer = "¡Hola! " + answer
+            # Si la consulta es relevante para cálculos
+            elif is_relevant_query(user_input, df):
+                result = get_calculation_result(user_input, df)
+                if result is None:
+                    answer = "Soy un bot en entrenamiento, pero tomaré en cuenta tu consulta para mejorar mi eficiencia."
+                else:
+                    answer = get_natural_language_answer(user_input, result)
+                if is_greeting(user_input):
+                    answer = "¡Hola! " + answer
             else:
-                answer = get_natural_language_answer(user_input, result)
+                answer = "Lo siento, solo puedo responder preguntas relacionadas con el análisis de datos del archivo. 😊"
         
         st.session_state.chat_history.append({"sender": "bot", "message": answer})
         
+        # Actualizar el contenedor del chat
         chat_container.empty()
         with chat_container.container():
             st.markdown('<div class="chat-container">', unsafe_allow_html=True)
