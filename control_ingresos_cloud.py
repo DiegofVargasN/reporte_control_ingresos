@@ -631,11 +631,11 @@ elif option == "POSTPAGO":
                         x=df_sum['FECHA_TS'], 
                         y=df_sum['TARIFA PLAN'], 
                         mode='lines+markers',
-                        name='Suma Tarifa Plan',
-                        line=dict(color='#04514f', width=6),
-                        marker=dict(size=8, color='darkblue', line=dict(width=1, color='white'))
+                        name='Monto no facturado',
+                        line=dict(color='#f95738', width=7, dash='dash'),
+                        marker=dict(size=20, color='white', line=dict(width=6, color='#772e25'))
                     ))
-    
+
                     # Línea de tendencia (Media móvil de 7 días)
                     df_sum['Tendencia'] = df_sum['TARIFA PLAN'].rolling(window=7, min_periods=1).mean()
                     fig.add_trace(go.Scatter(
@@ -643,30 +643,31 @@ elif option == "POSTPAGO":
                         y=df_sum['Tendencia'], 
                         mode='lines',
                         name='Tendencia (Media 7 días)',
-                        line=dict(color='red', dash='dot', width=2)
+                        line=dict(color='#ca6702', dash='dot', width=0)
                     ))
                 
                 else:
                     # Agregar un selector de color
                     color_barras = st.color_picker("Elige el color de las barras", "#04514f")
-    
+
                     fig.add_trace(go.Bar(
                         x=df_sum['FECHA_TS'], 
                         y=df_sum['TARIFA PLAN'], 
                         name='Suma Tarifa Plan',
                         marker=dict(color=color_barras)  # Aplica el color elegido
                     ))
-    
-    
+
+
                 # Configuración del diseño
                 fig.update_layout(
-                    title='📊 Monto no recuperado por Fecha de Envío',
-                    xaxis_title='Fecha de Envío',
-                    yaxis_title='Suma Acumulada (Bs)',
-                    template='plotly_white',
+                    title='📊 Monto no facturado por Fecha de Envío',
+                    xaxis_title='Fecha de envio de la observacion',
+                    yaxis_title='Monto no facturado (Bs)',
+                    template='plotly',
                     hovermode='x unified',
-                    xaxis=dict(showgrid=True, gridcolor='lightgray', tickangle=-45),
-                    yaxis=dict(showgrid=True, gridcolor='lightgray'),
+                    xaxis=dict(showgrid=False, gridcolor='lightgray', tickangle=0,tickmode='array',
+                               tickvals=df_sum['FECHA_TS'],ticktext=df_sum['FECHA_TS'].dt.strftime('%d-%m-%Y'),tickfont=dict(family="Arial", size=13, color='#bb3e03')),
+                    yaxis=dict(showgrid=True, gridcolor='lightgray', tickfont=dict(family="Arial",size=13,color='#bb3e03')),
                     legend=dict(title='Indicadores', x=0.01, y=1.15, orientation='h')
                 )
                 
@@ -704,11 +705,11 @@ elif option == "POSTPAGO":
                         x=df_sum['FECHA ENVIO'], 
                         y=df_sum['MONTO RECUPERADO'], 
                         mode='lines+markers',
-                        name='Suma Monto Recuperado',
-                        line=dict(color='#04514f', width=6),
-                        marker=dict(size=8, color='darkblue', line=dict(width=1, color='white'))
+                        name='Monto Recuperado',
+                        line=dict(color='#007f5f', width=7, dash='dash'),
+                        marker=dict(size=20, color='white', line=dict(width=6, color='#0077b6'))
                     ))
-    
+
                     # Línea de tendencia (Media móvil de 7 días)
                     df_sum['Tendencia'] = df_sum['MONTO RECUPERADO'].rolling(window=7, min_periods=1).mean()
                     fig.add_trace(go.Scatter(
@@ -716,30 +717,31 @@ elif option == "POSTPAGO":
                         y=df_sum['Tendencia'], 
                         mode='lines',
                         name='Tendencia (Media 7 días)',
-                        line=dict(color='red', dash='dot', width=2)
+                         line=dict(color='#ca6702', dash='dot', width=0)
                     ))
                 
                 else:
                     # Agregar un selector de color
                     color_barras = st.color_picker("Elige el color de las barras", "#04514f",key="color1")
-    
+
                     fig.add_trace(go.Bar(
                         x=df_sum['FECHA ENVIO'], 
                         y=df_sum['MONTO RECUPERADO'], 
-                        name='Suma Monto Recuperado',
+                        name='Monto Recuperado',
                         marker=dict(color=color_barras)  # Aplica el color elegido
                     ))
-    
-    
+
+
                 # Configuración del diseño
                 fig.update_layout(
-                    title='📊 Evolución de Monto Recuperado por Fecha de Envío',
+                    title='📊 Monto Recuperado por Fecha de Envío',
                     xaxis_title='Fecha de Envío',
                     yaxis_title='Monto Recuperado (Bs)',
                     template='plotly_white',
                     hovermode='x unified',
-                    xaxis=dict(showgrid=True, gridcolor='lightgray', tickangle=-45),
-                    yaxis=dict(showgrid=True, gridcolor='lightgray'),
+                    xaxis=dict(showgrid=False, gridcolor='lightgray', tickangle=0,tickmode='array',
+                               tickvals=df_sum['FECHA ENVIO'],ticktext=df_sum['FECHA ENVIO'].dt.strftime('%d-%m-%Y'),tickfont=dict(family="Arial", size=13, color='#bb3e03')),
+                    yaxis=dict(showgrid=True, gridcolor='lightgray', tickfont=dict(family="Arial",size=13,color='#bb3e03')),
                     legend=dict(title='Indicadores', x=0.01, y=1.15, orientation='h')
                 )
                 
@@ -1148,8 +1150,8 @@ elif option == "PREPAGO":
                         y=df_sum['TARIFA PLAN'], 
                         mode='lines+markers',
                         name='Suma Tarifa Plan',
-                        line=dict(color='#04514f', width=6),
-                        marker=dict(size=8, color='darkblue', line=dict(width=1, color='white'))
+                        line=dict(color='#f95738', width=7, dash='dash'),
+                        marker=dict(size=20, color='white', line=dict(width=6, color='#772e25'))
                     ))
 
                     # Línea de tendencia (Media móvil de 7 días)
@@ -1159,7 +1161,7 @@ elif option == "PREPAGO":
                         y=df_sum['Tendencia'], 
                         mode='lines',
                         name='Tendencia (Media 7 días)',
-                        line=dict(color='red', dash='dot', width=2)
+                        line=dict(color='#ca6702', dash='dot', width=0)
                     ))
                 
                 else:
@@ -1176,13 +1178,14 @@ elif option == "PREPAGO":
 
                 # Configuración del diseño
                 fig.update_layout(
-                    title='📊 Monto no recuperado por Fecha de Envío',
+                    title='📊 Monto no facturado por Fecha de Envío',
                     xaxis_title='Fecha de Envío',
                     yaxis_title='Suma Acumulada (Bs)',
                     template='plotly_white',
                     hovermode='x unified',
-                    xaxis=dict(showgrid=True, gridcolor='lightgray', tickangle=-45),
-                    yaxis=dict(showgrid=True, gridcolor='lightgray'),
+                    xaxis=dict(showgrid=False, gridcolor='lightgray', tickangle=0,tickmode='array',
+                               tickvals=df_sum['FECHA_TS'],ticktext=df_sum['FECHA_TS'].dt.strftime('%d-%m-%Y'),tickfont=dict(family="Arial", size=13, color='#bb3e03')),
+                    yaxis=dict(showgrid=True, gridcolor='lightgray', tickfont=dict(family="Arial",size=13,color='#bb3e03')),
                     legend=dict(title='Indicadores', x=0.01, y=1.15, orientation='h')
                 )
                 
@@ -1225,8 +1228,8 @@ elif option == "PREPAGO":
                         y=df_sum['MONTO RECUPERADO'], 
                         mode='lines+markers',
                         name='Suma Monto Recuperado',
-                        line=dict(color='#04514f', width=6),
-                        marker=dict(size=8, color='darkblue', line=dict(width=1, color='white'))
+                        line=dict(color='#007f5f', width=7, dash='dash'),
+                        marker=dict(size=20, color='white', line=dict(width=6, color='#0077b6'))
                     ))
 
                     # Línea de tendencia (Media móvil de 7 días)
@@ -1236,7 +1239,7 @@ elif option == "PREPAGO":
                         y=df_sum['Tendencia'], 
                         mode='lines',
                         name='Tendencia (Media 7 días)',
-                        line=dict(color='red', dash='dot', width=2)
+                        line=dict(color='red', dash='dot', width=0)
                     ))
                 
                 else:
@@ -1257,8 +1260,9 @@ elif option == "PREPAGO":
                     yaxis_title='Monto Recuperado (Bs)',
                     template='plotly_white',
                     hovermode='x unified',
-                    xaxis=dict(showgrid=True, gridcolor='lightgray', tickangle=-45),
-                    yaxis=dict(showgrid=True, gridcolor='lightgray'),
+                    xaxis=dict(showgrid=False, gridcolor='lightgray', tickangle=0,tickmode='array',
+                               tickvals=df_sum['FECHA_TS'],ticktext=df_sum['FECHA_TS'].dt.strftime('%d-%m-%Y'),tickfont=dict(family="Arial", size=13, color='#bb3e03')),
+                    yaxis=dict(showgrid=True, gridcolor='lightgray', tickfont=dict(family="Arial",size=13,color='#bb3e03')),
                     legend=dict(title='Indicadores', x=0.01, y=1.15, orientation='h')
                 )
                 
